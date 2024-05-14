@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Todo List</title>
+        
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body{
+            scale:1.1;
+        }
+        .task-list{
+            background-color: #eee;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .container-fluid{
+            margin-bottom: 20px !important;
+        }
+       
+        a i{
+            color:crimson;
+            margin-left: 10px;
+            padding-top: 0px;
+        }
+
+        #checkbox{
+            margin-left: 30px;
+            margin-top: 15px;
+            scale: 1.2;
+            box-shadow: 2px 2px 2px lightslategray;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-1 bg-primary text-white text-center">
+    
+        <h3>Todo List</h3>
+    
+    </div>
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col-sm-6">
+                
+                <div class="form-group w-75">
+                    <label for="">Title</label>
+                    <input id="title" type="text"  class="form-control" placeholder="enter title">
+                </div>
+
+                <div class="form-group mt-4 w-75">
+                    <label for="">Description</label>
+                    <input id="desc" type="text"  class="form-control" placeholder="enter description">
+                </div>
+
+                <div class="form-group mt-4 w-75">
+                    <button id="save"onclick="saveTask()"  type="submit" class="btn btn-primary">Add Task</button>
+                    <button id="update" onclick="updateTask(this.getAttribute('update-index'))" class="btn btn-warning" disabled="true" type="submit">Update Task</button>
+                    <!-- index will be passed as an argument when onclick (update btn) fires -->
+                </div>
+            </div>
+
+            <div class="col-sm-6" id="task-list">
+        <!-- Task List to be done dynamically html-->
+        <!-- always make static html first then make it dynamic using
+        copy paste using innerHTML and object/array iteration             -->
+                  
+                <!--      
+                    new row with 6-6 cols
+
+                    <div class="row task-list mt-1">
+                        <div class="col-sm-6">
+                           <h4>Title</h4>
+                           <p>Hello</p>
+                        </div>
+                    </div> <br>
+                 -->
+            </div>
+        </div>
+    </div>
+   
+</body>
+</html>
+
+<script>
+// [
+//         {title:description}
+// ]
+
+    showTask(); //calls window.onload
+
+    function saveTask(){
+
+        let title = document.querySelector('#title');
+        let desc = document.querySelector('#desc');
+
+        // console.log(title, desc);
+        if(title.value !=="" && desc.value !==""){
+            addTask(title.value ,desc.value);
+
+            //clears after filling and adding textarea
+            title.value = "";
+            desc.value = "";
+
+            showTask();
+
+        }
+    }
+
+    
+    function addTask(title, desc){
+        //allTask refereneces to values in LS
+        let allTask = localStorage.getItem('taskList');
+
+        if(allTask){
+            
+            allTask = JSON.parse(allTask);
+       
+        }else{
+
+            allTask = []; //new arr when first task adds
+                
+        }
+
+        // console.log(allTask);
+        allTask.push({title, desc})
+        localStorage.setItem('taskList', JSON.stringify(allTask))
+
+    }
+
+    function showTask(){
+        let allTask = localStorage.getItem('taskList');
+
+        if(allTask){
+            allTask = JSON.parse(allTask);
+
+            let html = "";
+
+            //poora object{k:v} item ke ander
+            //index is default param in forEach function
+            allTask.forEach((item ,index) => {
+                // console.log(item.title , item.desc);
+                
+                //new row
+                html += `
+
+                <div class="row task-list mt-1">
+                        <div class="col-sm-10" style="border-radius:6px; background-color:yellowgreen">
+                           <h4>${item.title}</h4>
+                           <p>${item.desc}</p>
+                        </div>
+                        <div class="col-sm-2" style="font-weight: 700; scale: 1.1;">
+                            <a href="#" onclick="update(${index})" style=" font-size:17px; padding-top:30px;">Edit</a>
+                            <a href="#" onclick="deleteTask(${index})"><i class="fa fa-trash" aria-hidden="true"></i></a>
+                            <input type="checkbox" id="checkbox">
+                            </div>
+                 </div> <br>
+                
+                `;
+
+            });
+
+            document.querySelector('#task-list').innerHTML = html;
+
+        }
+    }
+
+    //select edit and task is fetched with btn abling**
+    function update(index){
+
+        let title = document.querySelector('#title');
+        let desc = document.querySelector('#desc');
+
+        let saveId = document.querySelector('#save');
+        let updateId = document.querySelector('#update');
+
+        // alert(index);
+
+        //gives all the task/values
+        let allTask = localStorage.getItem('taskList');
+     
+        if(allTask){
+
+            //index wise showing values
+            allTask = JSON.parse(allTask);
+            // console.log(allTask[index]);
+
+            //puts values in textArea
+            title.value = allTask[index].title;
+            desc.value = allTask[index].desc;
+
+            //update made bydefault disable in inline
+            saveId.disabled = true;
+            updateId.disabled = false;
+
+            //adds attribute in update btn tag<k,v> check via inspect dynamically
+            updateId.setAttribute('update-index', index);
+
+        }
+    }
+
+    function updateTask(index){
+
+        let title = document.querySelector('#title');
+        let desc = document.querySelector('#desc');
+        
+        let saveId = document.querySelector('#save');
+        let updateId = document.querySelector('#update');
+
+        // alert(index);
+        //update value via localStorage
+
+        let allTask = localStorage.getItem('taskList');
+
+        if(allTask){
+           //updating in local storage
+            allTask = JSON.parse(allTask);
+            allTask[index] = {title:title.value ,desc:desc.value};
+            localStorage.setItem('taskList', JSON.stringify(allTask));
+
+            //shows in html
+            showTask();
+
+            //clears textArea
+            title.value = "";
+            desc.value = "";
+
+            //after updating new task can be added now
+            saveId.disabled = false;
+            updateId.disabled = true;
+        }
+    }
+
+    function deleteTask(index){
+        let allTask = localStorage.getItem('taskList');
+
+        //boolean confirm() function
+        if(confirm("remove this task ?") &&  allTask){
+
+            allTask = JSON.parse(allTask);
+            // console.log(allTask[index]);
+
+            allTask = allTask.filter((item, taskIndex)=>{
+                return taskIndex !== index;
+            })
+
+            //deletion updated in LS
+            localStorage.setItem('taskList', JSON.stringify(allTask));
+
+            //deletion updated on web page
+            showTask();
+        }
+    }
+
+    //testing
+    // showTask();
+    // addTask("title", "description");
+
+</script>
